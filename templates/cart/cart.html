@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Cart | {% endblock %}
+
+{% block content %}
+    <div class="mx-auto px-4 mb-20 pt-20" id="cartapp" v-cloak>
+        <div class="relative overflow-x-auto mt-32 mb-5">
+            <table class="w-full text-sm text-left rtl:text-right rounded-lg">
+                <thead class="text-xl text-dark uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">
+                            Image
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Product
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Price
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Quantity
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Total
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            Remove
+                        </th>
+                    </tr>
+                </thead>
+                <tbody v-if="products.length">
+                    <tr class="bg-white border-b" v-for="product in products" :key="product.id">
+                        <th scope="row" class="px-6 py-4 font-medium text-dark whitespace-nowrap">
+                            <img :src="product.thumbnail" class="w-12 rounded-lg" alt="Image"/>
+                        </th>
+                        <td class="px-6 py-4">
+                            [[ product.title ]]
+                        </td>
+                        <td class="px-6 py-4">
+                            KES [[ product.price ]]
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center mt-2">
+                                <button @click="decrementQuantity(product.id)" class="px-2 py-1 bg-red-500 text-white rounded-lg">&minus;</button>
+                                <span class="mx-2">[[ product.quantity ]]</span>
+                                <button @click="incrementQuantity(product.id)" class="px-2 py-1 bg-green-500 text-white rounded-lg">&plus;</button>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">KES [[ product.total_price ]]</td>
+                        <td class="px-6 py-4"><button @click="removeFromCart(product.id)" class="ml-4 px-2 py-1 bg-red-500 text-white rounded-lg">X</button></td>
+                    </tr>
+                </tbody>
+                <tbody v-else>
+                    <tr>
+                        <td class="text-center" colspan="6">
+                            <h2 class="text-4xl mt-5">Your cart is empty</h2>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div class="col-span-2">
+                <div class="flex items-center justify-between p-4 rounded-lg w-1/2">
+                    <input type="text" v-model="coupon_code" placeholder="Coupon Code" class="py-3 px-2 border rounded-lg flex-grow bg-white border-gray-400">
+                    <button @click="applyCoupon" class="ml-2 px-5 py-3 bg-dark text-white rounded-full">Apply Coupon</button>
+                </div>
+                <p v-if="showCouponCodeError" class="text-red-500 mt-2">Invalid Coupon Code</p>
+            </div>
+            <div class="mb-5">
+                <h2 class="text-2xl font-medium tracking-wide uppercase">Cart Totals</h2>
+                <hr class="border-0 h-px bg-gray-300 rounded-full my-3"/>
+                <div class="flex flex-col mb-2">
+                    <div class="flex mb-5">
+                        <p class="text-dark mr-12 text-lg">Subtotal</p>
+                        <strong class="text-dark text-lg">KES [[ totalCost ]]</strong>
+                    </div>
+                    <div class="flex">
+                        <p class="text-dark mr-5 text-lg">Total Items</p>
+                        <strong class="text-dark text-lg">[[ totalItems ]]</strong>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <a href="{% url 'initiate_payment' %}" class="px-10 py-3 bg-dark w-full mt-5 text-white rounded-full uppercase tracking-wide text-lg">Proceed to Checkout</a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Products JSON:', '{{ productsstring|safe }}');
+    
+        new Vue({
+            el: "#cartapp",
+            delimiters: ['[[', ']]'],
+            data: {
+                errors: [],
+                products: JSON.parse('{{ productsstring|default:"[]"|safe }}').map(product => ({
+                    ...product,
+                    total_price: parseFloat(product.total_price) || 0,
+                    price: parseFloat(product.price) || 0,
+                    quantity: parseInt(product.quantity) || 0
+                })),
+                first_name: '{{ first_name }}',
+                last_name: '{{ last_name }}',
+                email: '{{ email }}',
+                phone: '{{ phone }}',
+                address: '{{ address }}',
+                zipcode: '{{ zipcode }}',
+                place: '{{ place }}',
+                coupon_value: 0,
+                showCouponCodeError: false,
+                coupon_code: ''
+            },
+            computed: {
+                totalItems() {
+                    return this.products.reduce((total, product) => total + product.quantity, 0);
+                },
+                totalCost() {
+                    const total = this.products.reduce((total, product) => total + product.total_price, 0);
+                    return total.toFixed(2);
+                },
+                totalCostWithCoupon() {
+                    if (this.coupon_value > 0) {
+                        return this.totalCost * (1 - this.coupon_value / 100);
+                    } else {
+                        return this.totalCost;
+                    }
+                }
+            },
+            mounted() {
+                console.log("Products data: ", this.products);
+            },
+            methods: {
+                incrementQuantity(productId) {
+                    const product = this.products.find(p => p.id === productId);
+                    if (product) {
+                        product.quantity++;
+                        product.total_price = product.quantity * product.price;
+                    }
+                },
+                decrementQuantity(productId) {
+                    const product = this.products.find(p => p.id === productId);
+                    if (product && product.quantity > 1) {
+                        product.quantity--;
+                        product.total_price = product.quantity * product.price;
+                    }
+                },
+                removeFromCart(productId) {
+                    fetch('{% url "api_remove_from_cart" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ 'product_id': productId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.products = this.products.filter(p => p.id !== productId);
+                    });
+                },
+                applyCoupon() {
+                    if (this.coupon_code !== '') {
+                        fetch('/api/can_use/?coupon_code=' + this.coupon_code, {
+                            method: 'GET'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.amount) {
+                                this.showCouponCodeError = false;
+                                this.coupon_value = parseInt(data.amount);
+                            } else {
+                                this.coupon_value = 0;
+                                this.showCouponCodeError = true;
+                            }
+                        });
+                    } else {
+                        this.showCouponCodeError = true;
+                    }
+                },
+                initiate_payment() {
+                    // Placeholder for payment initiation logic
+                    console.log("Payment initiated");
+                }
+            }
+        });
+    </script>
+{% endblock %}

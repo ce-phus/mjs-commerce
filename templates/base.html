@@ -1,0 +1,293 @@
+{% load compress %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}MJ's Technologies</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
+
+    {% compress css %}
+    <link rel="stylesheet" href="{% static 'src/output.css' %}">
+    {% endcompress %}
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
+
+
+    <style>
+        a {
+    text-decoration: none !important;
+    }
+     </style>
+
+<script>
+    console.log("Javascript is running")
+    var user = '{{ request.user }}'
+    var csrftoken = '{{ csrf_token }}'
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';')
+            for (var i = 0; i < cookies.length; i++){
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    var cart = JSON.parse(getCookie('cart'));
+    if (cart == undefined) {
+        cart = {};
+        console.log('Cart Created!', cart);
+        document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/";
+    }
+    console.log('Cart:', cart);
+
+    function updateCartIcon(numItems) {
+        document.getElementById('cart-total').textContent = numItems;
+    }
+
+    function updateCart(productId, action) {
+        console.log('USER:', user);
+
+        if (user === 'AnonymousUser') {
+            addCookieItem(productId, action);
+        } else {
+            updateUserOrder(productId, action);
+        }
+    }
+
+    function updateUserOrder(productId, action) {
+        console.log('User is authenticated, sending data...');
+
+        var url = '{% url "api_add_to_cart" %}';
+
+        if (action === 'remove') {
+            url = '{% url "api_remove_from_cart" %}';
+        }
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({ 'product_id': productId, 'update': action === 'add', 'quantity': 1 })
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            updateCartIcon(data.cart_total);
+        });
+    }
+
+</script>
+
+</head>
+
+<body>
+    <nav class="fixed top-0 z-50 w-full bg-dark border-b border-gray-200" id="navbarapp">
+        <div class="flex flex-wrap items-center justify-between mx-auto p-2">
+            <a href="{% url 'index' %}" class="flex items-center space-x-3 rtl:space-x-reverse">
+                <img src="{% static 'src/logo/logo-mj.png' %}" class="" alt="logo" />
+            </a>
+            <div class="flex md:order-2">
+                <button data-collapse-toggle="navbar-menu" type="button" class=" mt-2 mr-2 inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-menu" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+                    </svg>
+                </button>
+                <div class="flex md:order-2 mt-1">
+                    <a href="{% url 'cart' %}" class="relative mt-2 mx-1">
+                        <svg class="w-6 h-6 text-gray-100 hover:text-gray-300" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path>
+                        </svg>
+                        <span id="cart-total" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">0</span>
+                    </a>
+                </div>
+                {% if request.user.is_authenticated %}
+                <a class="flex flex-col items-center p-2 text-gray-50 rounded-lg group" href="{% url 'myaccount' %}">
+                    <svg class="flex-shrink-0 w-5 h-5  transition duration-75 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 18">
+                        <path d="M14 2a3.963 3.963 0 0 0-1.4.267 6.439 6.439 0 0 1-1.331 6.638A4 4 0 1 0 14 2Zm1 9h-1.264A6.957 6.957 0 0 1 15 15v2a2.97 2.97 0 0 1-.184 1H19a1 1 0 0 0 1-1v-1a5.006 5.006 0 0 0-5-5ZM6.5 9a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM8 10H5a5.006 5.006 0 0 0-5 5v2a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-2a5.006 5.006 0 0 0-5-5Z"/>
+                     </svg>
+                     <span class="flex-1 ms-3 whitespace-nowrap">{{ user.username }}</span>
+                </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="mt-1 px-2 py-1.5 ml-3 lg:ml-0 lg:mr-2 rounded-lg bg-grade hover:bg-dark text-white">Sign in</a>
+                {% endif %}
+                
+            </div>
+            <div class="flex">
+                <button type="button" data-collapse-toggle="search-bar" aria-controls="search-bar" aria-expanded="false" class="md:hidden text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 rounded-lg text-sm p-2.5 me-1">
+                    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                    </svg>
+                    <span class="sr-only">Search</span>
+                </button>
+                <div id="search-bar" class="relative hidden md:block mx-3">
+                    <form method="get" action="{% url 'search' %}" class="flex items-center">
+                        <div class="flex">
+                            <input type="text" class="input px-2 py-5 border rounded-r-lg rounded-full focus:outline-none focus:border-blue-500 lg:w-full xl:w-[830px]" placeholder="Search..." name="query">
+                            <button type="submit" class="button bg-grade hover:bg-green-600 text-white font-bold py-5 px-4 rounded-l-lg rounded-full">
+                                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                                  </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+        <div class="items-center justify-between w-full md:flex md:w-auto md:order-1" id="navbar-menu">
+            <ul class="flex flex-col md:p-0 sm:p-4 xs:p-4 font-medium border-gray-100 rounded-lg  md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 text-white lg:hidden">
+                <li class="md:flex">
+                    {% for category in menu_categories %}
+                        {% if not category.children.all %}
+                            <a href="{% url 'category_detail' category.slug %}" class="block py-2 px-2 ml-2 mr-2 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0">{{ category.title }}</a>
+                        {% else %}
+                            <div class="flex">
+                                <a href="{% url 'category_detail' category.slug %}" class="">{{ category.title }}</a>
+                                <svg class="w-2.5 h-2.5 mt-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1l4 4 4-4"/>
+                                </svg>
+                            </div>
+                            <div class="w-44 p-5 bg-white rounded-lg shadow absolute z-10 hidden group-hover:block">
+                                <ul class="space-y-3">
+                                    {% for child in category.children.all %}
+                                        <li>
+                                            <a href="{% url 'category_detail' child.slug %}" class="block py-2 px-2 ml-2 mr-2 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0">{{ child.title }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </li>
+            </ul>
+            
+        </div>
+    </nav>
+    <section class="bg-gray-200 pt-20 lg:pt-10 pb-32">
+        <div class="pt-20 flex items-center justify-center bg-white z-40">
+            <ul class="flex flex-col md:flex-row md:space-x-8 items-center  hidden lg:block">
+                <li class="md:flex">
+                    <a class="text-red-600 text-sm hover:text-primary p-4" href="{% url 'all_products' %}">All Products</a>
+                    <a class="text-red-600 text-sm hover:text-primary p-4" href="{% url 'index' %}">Home</a>
+                    <a class="text-red-600 text-sm hover:text-primary p-4" href="{% url 'contact' %}">Contact Us</a>
+                </li>
+            </ul>
+        </div>
+        <div class="container">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </section>
+
+    <section class="pb-20">
+        {% include 'parts/newsletter.html' %}
+    </section>
+    
+
+    <footer class="w-full bg-dark z-10">
+        <a class="" href="{% url 'index' %}">
+            <img src="{% static 'src/logo/logo-mj.png' %}" alt="logo-img" class="mb-4"/>
+        </a>
+        <div class="container">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  gap-2 md:gap-4">
+                <div class="flex flex-col">
+                    <h1 class="text-white font-bold mb-5 text-xl tracking-wide">CONTACT INFO</h1>
+                    <p class="text-white font-medium tracking-wide mb-4">+254 701 650457</p>
+                    <p class="text-secondary mb-2">Mon To Sat : 8:00 AM To 7:00 PM</p>
+                    <p class="text-white mb-2">support@mjstechnology.co.ke</p>
+
+                    <hr class="my-3 w-3/4 rounded-full bg-grade border-0 h-px"/>
+
+                    <p class="text-secondary mb-2">Veteran House , Along Moi Avenue , 6th Floor , Room No.610 Moi, Nairobi Area, Kenya</p>
+                </div>
+
+                <div class="flex flex-col">
+                    <h1 class="text-white font-bold mb-5 text-xl tracking-wide">COMPANY</h1>
+                    <a class="text-secondary mb-2" href="#">About Us</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">Career</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">Affiliates</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">Blog</a>
+                </div>
+
+                <div class="flex flex-col">
+                    <h1 class="text-white font-bold mb-5 text-xl tracking-wide">HELP</h1>
+                    <a class="text-secondary hover:text-red-100 mb-2" href="#">Cutomer Service</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">My Account</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">Find a Store</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">Legal & Privacy</a>
+                </div>
+
+                <div class="flex flex-col">
+                    <h1 class="text-white font-bold mb-5 text-xl tracking-wide">MY ACCOUNT</h1>
+                    <a class="text-secondary hover:text-red-100 mb-2" href="#">My Profile</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">My Order History</a>
+                    <a class="text-secondary hover:text-grade mb-2" href="#">Order Tracking</a>
+                    
+                </div>
+            </div>
+            <hr class="border-0 h-px bg-gray-300 my-5 rounded-full"/>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-7">
+                <div>
+                    <p class="text-white">Copyright © 2024 MJS Technology. All rights reserved</p>
+                </div>
+                <div>
+                    <p class="text-white">Privacy Policy |
+                        Terms & Conditions |
+                        Cookie</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle search bar on small screens
+           var searchButton = document.querySelector('button[data-collapse-toggle="search-bar"]');
+           var searchBar = document.getElementById('search-bar');
+   
+           searchButton.addEventListener('click', function() {
+               searchBar.classList.toggle('hidden');
+           });
+   
+           // Toggle main menu on small screens
+           var toggleButton = document.querySelector('button[data-collapse-toggle="navbar-menu"]');
+           var navbarMenu = document.getElementById('navbar-menu');
+   
+           toggleButton.addEventListener('click', function() {
+               navbarMenu.classList.toggle('hidden');
+           });
+      </script>
+
+<script>
+    function updateCartIcon(cartTotal) {
+        document.getElementById('cart-total').textContent = cartTotal;
+    }
+
+    // Update cart icon on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateCartIcon({{ cart_total }});
+    });
+</script>
+{% block scripts %}
+{% endblock %}
+</body>
+</html>
