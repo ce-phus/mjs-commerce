@@ -12,11 +12,13 @@ from apps.cart.views import cart_detail, success
 from apps.payment.views import initiate_payment, verify_payment
 from apps.carousel.views import CarouselItemList
 from apps.contact.views import contact
+from apps.order.views import admin_order_pdf
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('search/', search, name='search'),
     path('cart/', cart_detail, name='cart'),
+    path('admin/admin_order_pdf/<int:order_id>/', admin_order_pdf, name='admin_order_pdf'),
     path('cart/success/', success, name='success'),
     path('', index, name='index'),
     path('index/allproducts/', allproducts, name='all_products'),
@@ -27,8 +29,9 @@ urlpatterns = [
     path('myaccount/', myaccount, name='myaccount'),
     path('signup/', signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='userprofile/login.html'), name='login'),
-    path('logout/', logout, name='logout'),
-
+    path('logout/', auth_views.LogoutView.as_view(template_name = 'userprofile/logout.html'), name = 'logout'),
+    path('password-reset/', auth_views.PasswordResetView.as_view(template_name = 'userprofile/password_reset.html'), name = 'password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name = 'userprofile/password_reset_done.html'), name = 'password_reset_done'),
     # API
     path('api/', CarouselItemList.as_view(), name='carousel-item-list'),
     path('verify_payment<str:ref>/', verify_payment, name='verify_payment'),
