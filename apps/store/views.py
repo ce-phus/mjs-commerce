@@ -1,5 +1,7 @@
 import random
 
+from django.core.paginator import Paginator
+
 from datetime import datetime
 from django.utils import timezone
 
@@ -71,9 +73,14 @@ def category_detail(request, slug):
     category = get_object_or_404(Category, slug=slug)
     products = category.products.filter(parent=None)
 
+    # Pagination
+    paginator = Paginator(products, 10)  # Show 10 products per page.
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'category': category,
-        'products': products
+        'products': page_obj,  # Use page_obj instead of products
     }
 
     return render(request, 'store/category_detail.html', context)

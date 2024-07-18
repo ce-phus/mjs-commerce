@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from apps.store.models import Product, Category
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -19,12 +20,14 @@ def index(request):
     return render(request, "core/index.html", context)
 
 def allproducts(request):
-    products = Product.objects.filter(is_featured=True)
-    featured_categories = Category.objects.filter(is_featured=True)
+    products_list = Product.objects.all()
+
+    paginator = Paginator(products_list, 20)  
+    page_number = request.GET.get('page')
+    products = paginator.get_page(page_number)
 
     context = {
         'products': products,
-        'featured_categories': featured_categories,
     }
 
     return render(request, "core/allproducts.html", context)

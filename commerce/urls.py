@@ -15,10 +15,10 @@ from apps.contact.views import contact
 from apps.order.views import admin_order_pdf
 
 urlpatterns = [
+    path('admin/admin_order_pdf/<int:order_id>/', admin_order_pdf, name='admin_order_pdf'),
     path('admin/', admin.site.urls),
     path('search/', search, name='search'),
     path('cart/', cart_detail, name='cart'),
-    path('admin/admin_order_pdf/<int:order_id>/', admin_order_pdf, name='admin_order_pdf'),
     path('cart/success/', success, name='success'),
     path('', index, name='index'),
     path('index/allproducts/', allproducts, name='all_products'),

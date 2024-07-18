@@ -3,6 +3,19 @@
 {% block title %}{{ product.title }} | {% endblock %}
 
 {% block content %}
+    <style>
+        .product-image {
+        overflow: hidden;
+        }
+
+        .product-image img {
+            transition: transform 0.3s ease;
+        }
+
+        .product-image:hover img {
+            transform: scale(1.2);
+        }
+    </style>
     <div id="productapp" class="container mx-auto px-4 pt-20">
         <nav class="breadcrumb my-4">
             <ul class="flex space-x-2">
@@ -16,7 +29,7 @@
         </nav>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div class="product-image">
                 <img src="{{ product.image.url }}" class="w-full h-auto">
             </div>
 
@@ -84,9 +97,7 @@
                     </div>
                 {% else %}
                     {% if product.in_cart %}
-                       
                         <p class="text-green-500">Already in cart!</p>
-                        
                     {% else %}
                         {% if product.num_available > 0 %}
                             <button class="update-cart bg-grade hover:bg-red-500 text-white px-4 py-2 rounded" data-product="{{ product.id }}" data-action="add">Add to cart</button>
@@ -244,5 +255,24 @@
 
     var user = '{{ request.user.username|escapejs }}';
     var cart = JSON.parse('{{ request.COOKIES.cart|default:"{}"|escapejs }}');
+
+    // Basic zoom effect
+    var productImage = document.querySelector('.product-image img');
+
+    productImage.addEventListener('mousemove', function(event) {
+        var width = productImage.width;
+        var height = productImage.height;
+        var mouseX = event.offsetX;
+        var mouseY = event.offsetY;
+
+        var backgroundPosX = (mouseX / width * 100).toFixed(2);
+        var backgroundPosY = (mouseY / height * 100).toFixed(2);
+
+        productImage.style.transformOrigin = `${backgroundPosX}% ${backgroundPosY}%`;
+    });
+
+    productImage.addEventListener('mouseleave', function() {
+        productImage.style.transformOrigin = 'center center';
+    });
 </script>
 {% endblock %}

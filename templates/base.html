@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}MJ's Technologies</title>
-
+    <link rel="icon" href="{% static 'favicon/favicon.png' %}" type="image/png" class="rounded-full">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css">
@@ -189,8 +189,30 @@
                 <li class="md:flex">
                     <a class="text-red-600 text-sm hover:text-primary p-4" href="{% url 'all_products' %}">All Products</a>
                     <a class="text-red-600 text-sm hover:text-primary p-4" href="{% url 'index' %}">Home</a>
+                    {% for category in menu_categories %}
+                        {% if not category.children.all %}
+                            <a href="{% url 'category_detail' category.slug %}" class="text-red-600 text-sm hover:text-primary p-4">{{ category.title }}</a>
+                        {% else %}
+                            <div class="flex">
+                                <a href="{% url 'category_detail' category.slug %}" class="">{{ category.title }}</a>
+                                <svg class="w-2.5 h-2.5 mt-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1l4 4 4-4"/>
+                                </svg>
+                            </div>
+                            <div class="w-44 p-5 bg-white rounded-lg shadow absolute z-10 hidden group-hover:block">
+                                <ul class="space-y-3">
+                                    {% for child in category.children.all %}
+                                        <li>
+                                            <a href="{% url 'category_detail' child.slug %}" class="block py-2 px-2 ml-2 mr-2 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0">{{ child.title }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                     <a class="text-red-600 text-sm hover:text-primary p-4" href="{% url 'contact' %}">Contact Us</a>
                 </li>
+                
             </ul>
         </div>
         <div class="container">
@@ -261,31 +283,34 @@
 
     <script>
         // Toggle search bar on small screens
-           var searchButton = document.querySelector('button[data-collapse-toggle="search-bar"]');
-           var searchBar = document.getElementById('search-bar');
-   
-           searchButton.addEventListener('click', function() {
-               searchBar.classList.toggle('hidden');
-           });
-   
-           // Toggle main menu on small screens
-           var toggleButton = document.querySelector('button[data-collapse-toggle="navbar-menu"]');
-           var navbarMenu = document.getElementById('navbar-menu');
-   
-           toggleButton.addEventListener('click', function() {
-               navbarMenu.classList.toggle('hidden');
-           });
-      </script>
+        var searchButton = document.querySelector('button[data-collapse-toggle="search-bar"]');
+        var searchBar = document.getElementById('search-bar');
 
-<script>
-    function updateCartIcon(cartTotal) {
-        document.getElementById('cart-total').textContent = cartTotal;
-    }
+        searchButton.addEventListener('click', function() {
+            searchBar.classList.toggle('hidden');
+        });
 
-    // Update cart icon on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        updateCartIcon({{ cart_total }});
-    });
+        // Toggle main menu on small screens
+        var toggleButton = document.querySelector('button[data-collapse-toggle="navbar-menu"]');
+        var navbarMenu = document.getElementById('navbar-menu');
+
+        // Hide the navbar menu by default
+        document.addEventListener('DOMContentLoaded', function() {
+            navbarMenu.classList.add('hidden');
+        });
+
+        toggleButton.addEventListener('click', function() {
+            navbarMenu.classList.toggle('hidden');
+        });
+
+        // Update cart icon on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartIcon({{ cart_total }});
+        });
+
+        function updateCartIcon(cartTotal) {
+            document.getElementById('cart-total').textContent = cartTotal;
+        }
 </script>
 {% block scripts %}
 {% endblock %}
