@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load humanize %}
 {% block title %}Make Payment{% endblock %}
 
 {% block content %}
@@ -14,7 +14,7 @@
             </svg>
           </span>
           <h2 class="display-3 text-black">Hello {{ user.username }}</h2>
-          <p class="lead mb-5">You're about to pay KES {{ total_cost }} for {{ orderitem }}.</p>
+          <p class="lead mb-5">You're about to pay KES {{ total_cost|floatformat:0|intcomma }} for {{ orderitem }}.</p>
           <div class="form-group">
             <button onclick="payWithPaystack()" class="bg-dark rounded-full py-3 px-3 text-white bg-dark">Make payment</button>
         </div>

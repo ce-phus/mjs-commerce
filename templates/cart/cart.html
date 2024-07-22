@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %} Cart | {% endblock %}
 
@@ -38,7 +39,7 @@
                             [[ product.title ]]
                         </td>
                         <td class="px-6 py-4">
-                            KES [[ product.price ]]
+                            KES [[ formatNumber(product.price) ]]
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center mt-2">
@@ -47,7 +48,7 @@
                                 <button @click="incrementQuantity(product.id)" class="px-2 py-1 bg-green-500 text-white rounded-lg">&plus;</button>
                             </div>
                         </td>
-                        <td class="px-6 py-4">KES [[ product.total_price ]]</td>
+                        <td class="px-6 py-4">KES [[ formatNumber(product.total_price) ]]</td>
                         <td class="px-6 py-4"><button @click="removeFromCart(product.id)" class="ml-4 px-2 py-1 bg-red-500 text-white rounded-lg">X</button></td>
                     </tr>
                 </tbody>
@@ -74,7 +75,7 @@
                 <div class="flex flex-col mb-2">
                     <div class="flex mb-5">
                         <p class="text-dark mr-12 text-lg">Subtotal</p>
-                        <strong class="text-dark text-lg">KES [[ totalCost ]]</strong>
+                        <strong class="text-dark text-lg">KES [[ formatNumber(totalCost) ]]</strong>
                     </div>
                     <div class="flex">
                         <p class="text-dark mr-5 text-lg">Total Items</p>
@@ -84,7 +85,6 @@
                 <div class="mt-5">
                     <a href="{% url 'initiate_payment' %}" class="px-10 py-3 bg-dark w-full mt-5 text-white rounded-full uppercase tracking-wide text-lg">Proceed to Checkout</a>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -184,6 +184,9 @@
                 initiate_payment() {
                     // Placeholder for payment initiation logic
                     console.log("Payment initiated");
+                },
+                formatNumber(value) {
+                    return new Intl.NumberFormat().format(value);
                 }
             }
         });

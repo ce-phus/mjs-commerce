@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load humanize %}
+
 {% block title %}{{ product.title }} | {% endblock %}
 
 {% block content %}
@@ -35,7 +37,7 @@
 
             <div>
                 <h1 class="text-3xl font-bold">{{ product.title }}</h1>
-                <h2 class="text-xl font-semibold mt-2">KES {{ product.price }}, Stars: {% if product.get_rating == 0 %}No ratings yet{% else %}{{ product.get_rating|floatformat:1 }}{% endif %}</h2>
+                <h2 class="text-xl font-semibold mt-2">KES {{ product.price|floatformat:0|intcomma }} Stars: {% if product.get_rating == 0 %}No ratings yet{% else %}{{ product.get_rating|floatformat:1 }}{% endif %}</h2>
 
                 {% if product.description %}
                     <p class="mt-4">{{ product.description }}</p>
@@ -54,7 +56,7 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ product.title }}</td>
-                                    <td>KES {{ product.price }}</td>
+                                    <td>KES {{ product.price|floatformat:0|intcomma }}</td>
 
                                     <td class="mt-4 mb-4">
                                         {% if product.in_cart %}

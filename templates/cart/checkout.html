@@ -63,15 +63,15 @@
                               <tbody>
                               <tr v-for="item in products" :key="item.id">
                                   <td>[[ item.title ]]<strong class="mx-2">x</strong>[[ item.quantity ]]</td>
-                                  <td>KSH. [[ item.total_price ]]</td>
+                                  <td>KSH. [[ formatNumber(item.total_price) ]]</td>
                               </tr>
                               <tr>
                                   <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
-                                  <td class="text-black">Ksh [[ totalCost ]]</td>
+                                  <td class="text-black">Ksh [[ formatNumber(totalCost) ]]</td>
                               </tr>
                               <tr>
                                   <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
-                                  <td class="text-black font-weight-bold"><strong>Ksh [[ totalCost ]]</strong></td>
+                                  <td class="text-black font-weight-bold"><strong>Ksh [[ formatNumber(totalCost) ]]</strong></td>
                               </tr>
                               </tbody>
                             </table>
@@ -124,6 +124,11 @@
         },
         mounted() {
             console.log("Products data: ", this.products);
+        },
+        methods: {
+            formatNumber(value) {
+                return new Intl.NumberFormat().format(value);
+            }
         }
     });
 </script>
